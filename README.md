@@ -20,7 +20,7 @@ This goofy tool is meant to help build muscle memory for the part of the keyboar
 
 ## Why this exists
 
-There we were in a group call waiting for Manny to plug in a cable on a switch when this glorious idea came to fruition. Most typing trainers focus heavily on letters and words. This app is designed specifically to help practice:
+There we were in a group call waiting for Manny to plug in a cable on a switch when this glorious idea came to fruition thanks to our friend Codex. Most typing trainers focus heavily on letters and words. This app is designed specifically to help practice:
 
 - `1 2 3 4 5 6 7 8 9 0`
 - `! @ # $ % ^ & * ( )`
@@ -66,24 +66,7 @@ Mixes the number row and shifted symbols together.
 4. Watch your stats update live.
 5. Restart anytime or switch modes and timer length.
 
-## GitHub Pages setup
+## setup
 
-This project is designed to run as a **single `index.html` file**, so there is no build step.
+This project is designed to run as a **single `index.html` file**, so there is no build step.  You can save it and run it in your favorite browser.
 
-### Publish on GitHub Pages
-
-1. Create a new GitHub repository
-2. Add the file as `index.html`
-3. Commit it to the `main` branch
-4. Go to **Settings**
-5. Open **Pages**
-6. Under **Build and deployment**:
-   - set **Source** to `Deploy from a branch`
-   - choose **main**
-   - choose **/(root)**
-7. Save
-
-After GitHub finishes publishing, your site will be available at:
-
-```text
-https://YOUR-USERNAME.github.io/REPO-NAME/
