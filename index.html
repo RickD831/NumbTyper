@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Number & Symbol Typing Trainer</title>
+  <style>
+    :root {
+      --bg: #020617;
+      --panel: rgba(15, 23, 42, 0.82);
+      --panel-solid: #0f172a;
+      --border: #1e293b;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --muted-dim: #64748b;
+      --accent: #8b5cf6;
+      --accent-soft: rgba(139, 92, 246, 0.18);
+      --green: #34d399;
+      --green-soft: rgba(52, 211, 153, 0.14);
+      --red: #fb7185;
+      --red-soft: rgba(251, 113, 133, 0.12);
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin: 0 0 28px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      background: #0b1220;
+      color: var(--text);
+      padding: 10px 16px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: 0.98rem;
+    }
+
+    button:hover {
+      background: #111c31;
+    }
+
+    button.active-mode {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--white);
+    }
+
+    button.active-time {
+      border-color: var(--green);
+      background: var(--green-soft);
+      color: var(--white);
+    }
+
+    button.primary {
+      background: var(--white);
+      color: #020617;
+      border-color: transparent;
+      font-weight: 700;
+    }
+
+    .prompt {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      min-height: 180px;
+      padding: 20px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 1.9rem;
+      line-height: 1.8;
+      word-break: break-all;
+      user-select: none;
+    }
+
+    .typed-box {
+      margin-top: 18px;
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      min-height: 112px;
+      padding: 16px;
+      cursor: text;
+    }
+
+    .typed-box input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 1.3rem;
+      font-family: Consolas, Monaco, monospace;
+    }
+
+    .hint {
+      margin-top: 12px;
+      color: var(--muted-dim);
+      font-size: 0.92rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .stat {
+      background: rgba(2, 6, 23, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 16px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    .result {
+      margin-top: 18px;
+      border: 1px solid rgba(52, 211, 153, 0.25);
+      background: rgba(52, 211, 153, 0.1);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .result strong {
+      color: var(--white);
+    }
+
+    .tip {
+      margin-top: 18px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    .correct { color: var(--green); }
+    .incorrect { color: var(--red); background: var(--red-soft); border-radius: 4px; }
+    .current { color: var(--white); background: rgba(139, 92, 246, 0.28); border-radius: 4px; padding: 0 2px; }
+    .pending { color: #475569; }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Number &amp; Symbol Typing Trainer</h1>
+    <p class="subtitle">Start with a small set of number-row keys, then work up to full numbers and symbols.</p>
+
+    <div class="layout">
+      <div class="card">
+        <div class="toolbar" id="modeButtons"></div>
+        <div class="toolbar" id="timeButtons"></div>
+
+        <div class="prompt" id="promptDisplay"></div>
+
+        <div class="typed-box" id="typedBox">
+          <input id="typingInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Click here and type the highlighted character sequence..." />
+          <div class="hint">Backspace is disabled so you can build speed and rhythm.</div>
+        </div>
+
+        <div class="toolbar" style="margin-top: 18px; margin-bottom: 0;">
+          <button class="primary" id="restartBtn">Restart</button>
+          <button id="focusBtn">Focus typing box</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-top: 0; margin-bottom: 18px;">Stats</h2>
+        <div class="stats-grid" id="statsGrid"></div>
+        <div class="result" id="resultBox" style="display: none;"></div>
+        <div class="tip">Easy mode uses just a few neighboring number-row keys and their shifted symbols so you can build muscle memory first.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CHAR_SETS = {
+      easy: ["12!@", "34#$", "56%^", "78&*", "90()"],
+      numbers: ["1234567890"],
+      symbols: ["!@#$%^&*()"],
+      both: ["1234567890!@#$%^&*()"]
+    };
+
+    const state = {
+      mode: "easy",
+      duration: 60,
+      prompt: "",
+      typed: "",
+      started: false,
+      finished: false,
+      timeLeft: 60,
+      correct: 0,
+      incorrect: 0,
+      streak: 0,
+      bestStreak: 0,
+      timer: null
+    };
+
+    const modeOptions = [
+      ["easy", "Easy"],
+      ["numbers", "Numbers only"],
+      ["symbols", "Symbols only"],
+      ["both", "Both"]
+    ];
+
+    const timeOptions = [30, 60, 120];
+
+    const promptDisplay = document.getElementById("promptDisplay");
+    const typingInput = document.getElementById("typingInput");
+    const typedBox = document.getElementById("typedBox");
+    const restartBtn = document.getElementById("restartBtn");
+    const focusBtn = document.getElementById("focusBtn");
+    const resultBox = document.getElementById("resultBox");
+    const statsGrid = document.getElementById("statsGrid");
+    const modeButtons = document.getElementById("modeButtons");
+    const timeButtons = document.getElementById("timeButtons");
+
+    function makePrompt(mode, length = 84) {
+      const groups = CHAR_SETS[mode] || CHAR_SETS.both;
+      const selected = groups[Math.floor(Math.random() * groups.length)];
+      let text = "";
+      for (let i = 0; i < length; i += 1) {
+        text += selected[Math.floor(Math.random() * selected.length)];
+      }
+      return text;
+    }
+
+    function totalTyped() {
+      return state.correct + state.incorrect;
+    }
+
+    function accuracy() {
+      const total = totalTyped();
+      return total === 0 ? 100 : Math.round((state.correct / total) * 100);
+    }
+
+    function wpm() {
+      const elapsed = state.duration - state.timeLeft;
+      if (elapsed <= 0) return 0;
+      return Math.round((state.correct / 5) / (elapsed / 60));
+    }
+
+    function renderButtons() {
+      modeButtons.innerHTML = "";
+      timeButtons.innerHTML = "";
+
+      modeOptions.forEach(([key, label]) => {
+        const btn = document.createElement("button");
+        btn.textContent = label;
+        if (state.mode === key) btn.classList.add("active-mode");
+        btn.addEventListener("click", () => resetTest(key, state.duration));
+        modeButtons.appendChild(btn);
+      });
+
+      timeOptions.forEach((secs) => {
+        const btn = document.createElement("button");
+        btn.textContent = secs + "s";
+        if (state.duration === secs) btn.classList.add("active-time");
+        btn.addEventListener("click", () => resetTest(state.mode, secs));
+        timeButtons.appendChild(btn);
+      });
+    }
+
+    function renderPrompt() {
+      promptDisplay.innerHTML = "";
+      for (let i = 0; i < state.prompt.length; i += 1) {
+        const span = document.createElement("span");
+        span.textContent = state.prompt[i];
+
+        if (i < state.typed.length) {
+          span.className = state.typed[i] === state.prompt[i] ? "correct" : "incorrect";
+        } else if (i === state.typed.length && !state.finished) {
+          span.className = "current";
+        } else {
+          span.className = "pending";
+        }
+
+        promptDisplay.appendChild(span);
+      }
+    }
+
+    function renderStats() {
+      const items = [
+        ["Time left", state.timeLeft + "s"],
+        ["WPM", wpm()],
+        ["Accuracy", accuracy() + "%"],
+        ["Correct", state.correct],
+        ["Incorrect", state.incorrect],
+        ["Characters typed", totalTyped()],
+        ["Current streak", state.streak],
+        ["Best streak", state.bestStreak]
+      ];
+
+      statsGrid.innerHTML = items.map(([label, value]) => `
+        <div class="stat">
+          <div class="stat-label">${label}</div>
+          <div class="stat-value">${value}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderResult() {
+      if (!state.finished) {
+        resultBox.style.display = "none";
+        resultBox.innerHTML = "";
+        return;
+      }
+
+      resultBox.style.display = "block";
+      resultBox.innerHTML = `
+        <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 6px;">Time's up</div>
+        <div>Final score: <strong>${wpm()} WPM</strong> at <strong>${accuracy()}% accuracy</strong>.</div>
+      `;
+    }
+
+    function render() {
+      renderButtons();
+      renderPrompt();
+      renderStats();
+      renderResult();
+      typingInput.value = state.typed;
+      typingInput.disabled = state.finished;
+    }
+
+    function focusInput() {
+      requestAnimationFrame(() => typingInput.focus());
+    }
+
+    function stopTimer() {
+      if (state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+      }
+    }
+
+    function startTimer() {
+      stopTimer();
+      state.timer = setInterval(() => {
+        state.timeLeft -= 1;
+        if (state.timeLeft <= 0) {
+          state.timeLeft = 0;
+          state.finished = true;
+          state.started = false;
+          stopTimer();
+        }
+        render();
+      }, 1000);
+    }
+
+    function resetTest(mode = state.mode, duration = state.duration) {
+      stopTimer();
+      state.mode = mode;
+      state.duration = duration;
+      state.prompt = makePrompt(mode);
+      state.typed = "";
+      state.started = false;
+      state.finished = false;
+      state.timeLeft = duration;
+      state.correct = 0;
+      state.incorrect = 0;
+      state.streak = 0;
+      state.bestStreak = 0;
+      render();
+      focusInput();
+    }
+
+    function handleKeyDown(e) {
+      if (state.finished) return;
+
+      const allowedControlKeys = ["Tab", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Shift"];
+      if (e.key === "Backspace") {
+        e.preventDefault();
+        return;
+      }
+      if (allowedControlKeys.includes(e.key)) return;
+      if (e.key.length !== 1) {
+        e.preventDefault();
+        return;
+      }
+
+      e.preventDefault();
+
+      if (!state.started) {
+        state.started = true;
+        state.timeLeft = state.duration;
+        startTimer();
+      }
+
+      const expectedChar = state.prompt[state.typed.length];
+      const nextTyped = state.typed + e.key;
+
+      if (e.key === expectedChar) {
+        state.correct += 1;
+        state.streak += 1;
+        if (state.streak > state.bestStreak) {
+          state.bestStreak = state.streak;
+        }
+      } else {
+        state.incorrect += 1;
+        state.streak = 0;
+      }
+
+      if (nextTyped.length >= state.prompt.length) {
+        state.prompt = makePrompt(state.mode);
+        state.typed = "";
+      } else {
+        state.typed = nextTyped;
+      }
+
+      render();
+    }
+
+    typedBox.addEventListener("click", focusInput);
+    focusBtn.addEventListener("click", focusInput);
+    restartBtn.addEventListener("click", () => resetTest(state.mode, state.duration));
+    typingInput.addEventListener("keydown", handleKeyDown);
+
+    resetTest("easy", 60);
+  </script>
+</body>
+</html>
